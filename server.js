@@ -67,8 +67,7 @@ app.post('/register', async (req,res)=>{
         users[req.body.username] = {name:req.body.name, hashedpassword:hashedpassword}
         res.json({isregistered : "true", status : "Registered successfully, being redirected to login"})
         console.log(users)
-    }
-    
+    }   
 })
 app.post('/login', async (req, res)=>{
     console.log(req.body.username + " trying to login")
@@ -103,7 +102,7 @@ app.get('/:room', function(req, res){
         res.render('app', {key : req.params.room, name:users[req.session.username].name})
     }
     else{
-        res.redirect()
+        res.redirect('/login')
     }
 })
 

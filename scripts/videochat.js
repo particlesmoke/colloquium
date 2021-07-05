@@ -9,7 +9,8 @@ var connected_clients = {}
 
 var tisme = new Peer(undefined,{
     host: '/',
-    port: '3000'
+    port: '3000',
+    secure: true
 })
 
 tisme.on('open', function(id){
