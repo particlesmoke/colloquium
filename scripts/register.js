@@ -1,4 +1,4 @@
-document.getElementById('register-button').addEventListener('click',function(){
+document.getElementById('user-button').addEventListener('click',function(){
     fetch('/register', {
         body: new FormData(document.getElementById('register-form')),
         method:'post'
@@ -14,3 +14,11 @@ document.getElementById('register-button').addEventListener('click',function(){
             }
     })
 })
+
+var initViewport = function(){
+	var metaEl = document.querySelector("#viewportMeta");
+	var content = "height=" + window.innerHeight + ",width=" + window.innerWidth + ",user-scalable=no";
+	metaEl.setAttribute('name', 'viewport');
+	metaEl.setAttribute('content', content);
+}
+initViewport();

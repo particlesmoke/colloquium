@@ -29,6 +29,7 @@ app.use(session({
 }))
 app.use(express.static('scripts'))
 app.use(express.static('style'))
+app.use(express.static('fonts'))
 app.use(express.urlencoded({ extended: false }))
 app.use(upload.none())
 app.set('view engine', 'ejs')

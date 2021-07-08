@@ -2,6 +2,9 @@ const socket = io('/')
 
 const myvideo = document.getElementById("my-video")
 const vidlist = document.getElementById("list-of-videos")
+const endcallbutton = document.getElementById("endcall-button")
+const startcallbutton = document.getElementById("startcall-button")
+const screensharebutton = document.getElementById("screenshare-button")
 
 // var myname = prompt("What's your name?")
 //var myname = 'Jayesh'
@@ -33,6 +36,9 @@ navigator.mediaDevices.getUserMedia({
         call.on('stream', function(theirstream){
             assignuservid(videoelement, theirstream)
         })
+        endcallbutton.addEventListener('click',function(){
+            call.close()
+        })
     })
     
     socket.on('clientjoined', function(clientdata){
@@ -46,6 +52,9 @@ navigator.mediaDevices.getUserMedia({
                 //console.log("getting stream")
                 assignuservid(videoelement, theirstream)           
             })
+            call.on('close', function(){
+                console.log("call closed")
+            })
         }, 400)
     })
 
@@ -57,7 +66,7 @@ navigator.mediaDevices.getUserMedia({
 })
 
 
-document.getElementById('screenshare-button').addEventListener('click', function(){
+screensharebutton.addEventListener('click', function(){
     navigator.mediaDevices.getDisplayMedia().then(function(myscreenstream){
         for(let id in connected_clients){
             //console.log("sharing screen with " + connected_clients[id])

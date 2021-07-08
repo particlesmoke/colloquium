@@ -3,23 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script defer src="/login.js"></script>
+    <meta name="viewport" id="viewportMeta" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="interface.css">
-    <title>Document</title>
+    <title>Login</title>
 </head>
 <body>
-    <div id="container">
-    <h2>Login</h2>
-    <form action="/login" method="POST" id="login-form">
-        <label for="username">Username:</label>
-        <input type="text" name="username" id="username"> <br>
-        <label for="password">Password:</label>
-        <input type="password" name="password" id="password"> <br>
-        <button type="button" id="login-button">Login</button>
-    </form>
-    <a href="/register">Register</a>
-    <div id="status"></div>
+    <div id="top-bar">Colloquium</div>
+    <div id="welcome-text">
+        <h1>Namaste 🙏</h1>
+        Hey there, nice to have you at Colloquium. <br>
+        In our rooms, you can have your gupshup, chai breaks, brainstorming, or romance with your partner (we don't judge, hehe, and yeah it's peer to peer and encrypted, very private).
     </div>
+    <div id="user-form-container">
+        <form id="login-form">
+            <div id="input-container">
+                <input type="text" name="username" id="username" placeholder="username" class="user-input" autocomplete="off"> <br>
+                <input type="password" name="password" id="password" placeholder="password" class="user-input" autocomplete="off"> <br>
+            </div>
+            <button type="button" id="user-button">Login</button>
+        </form>
+        <div id="status"></div>
+        <p id="user-form-bottomtext">
+            New here?<a href="/register"> Create an account</a>
+        </p>
+    </div>
+    <div id="filler"></div>
 </body>
+<script src="/login.js"></script>
 </html>

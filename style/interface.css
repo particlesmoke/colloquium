@@ -1,5 +1,148 @@
+@font-face {
+    font-family: "myfont";
+    src: url("./fonts/Aristotelica\ Display\ ExtraLight\ Trial.ttf");
+}
+@font-face {
+    font-family: "myfontb";
+    src: url("./fonts/Aristotelica\ Display\ DemiBold\ Trial.ttf");
+}
+@font-face {
+    font-family: "comfortaa";
+    src: url("./fonts/Comfortaa-Regular.ttf");
+}
+
+
+
+
+
+body{
+    font-family: myfont;
+    background-color: #dceeed;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+/* User form elements */
+
 button{
     cursor: pointer;
     border: hidden;
-    background-color: rgb(36, 186, 255);
+    border-radius: 24px;
+    background-color: #216383;
+    color: #dceeed;
+}
+
+
+
+input{
+    outline: none;
+    border: none;
+    background-color: #dceeed;
+    border-radius: 30px;
+}
+
+a{
+    font-family: myfontb;
+    color: #216383;
+    text-decoration: none;
+}
+
+#user-form-container{
+    border-radius: 24px;
+    background-color: rgb(113, 191, 188);
+    position: absolute;
+    right: 12%;
+    top: 30%;
+    width: 400px;
+    max-width: 400px;
+    height: 50vh;
+}
+
+.user-input{
+    text-align: center;
+    height: 5%;
+    padding: 3%;
+    margin: 2%;
+    width: 60%;
+    margin-left: 17%;
+}
+
+#input-container{
+    margin-top: 20%;
+}
+
+::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: #789392;
+    font-family: myfont ;
+    text-align: center;
+    font-size: 1.3rem;
+    opacity: 1; /* Firefox */
+}
+
+#user-button{
+    width:30%;
+    height: 5%;
+    padding: 3%;
+    margin-left: 34%;
+    margin-top: 4%;
+    font-family: myfontb;
+    font-size: 1.1em;
+}
+
+#user-form-bottomtext{
+    font-size: 1.1em;
+    padding: 4%;
+    text-align: center;
+}
+
+/* Top-bar */
+#top-bar{
+    background-image: -moz-linear-gradient( 0deg, rgb(33,99,131) 0%, rgb(113,191,188) 100%);
+    background-image: -webkit-linear-gradient( 0deg, rgb(33,99,131) 0%, rgb(113,191,188) 100%);
+    background-image: -ms-linear-gradient( 0deg, rgb(33,99,131) 0%, rgb(113,191,188) 100%);
+    color: white;
+    text-align: center;
+    font-size: 1.3em;
+    padding: 2%;
+    position: static;
+    width: 96%;
+    font-family: myfontb;
+}
+
+/* Welcome text */
+#welcome-text{
+    position: absolute;
+    top: 35%;
+    left: 12%;
+    color: #216383;
+    /* border:solid; */
+    width: 30%;
+    font-size: 1.3em;
+    line-height: 1.6em;
+    font-family: comfortaa;
+}
+
+h1{
+    font-size:1.4em;
+    font-family: myfontb;
+}
+
+@media (max-aspect-ratio: 5/4){
+    #welcome-text{
+        width: 70%;
+        left: 15%;
+        top: 20%;
+    }
+    #user-form-container{
+        top: 100%;
+        width: 80vw;
+        left: 10vw;
+        margin: auto;
+    }
+    #filler{
+        position: absolute;
+        top: 180%;
+        height: 1px;
+        width: 100%;
+    }
 }
