@@ -17,8 +17,13 @@ var users = {
     a: {
     name: 'a',
     hashedpassword: '$2b$10$u6riWXoC8adVxf1d9G0dJeJ6hvRvH.6y5mVd036fvyHZEqybXxi1K'
+  },
+  q: {
+    name: 'q',
+    hashedpassword: '$2b$10$LfQBWAx9NV1.QmLdm59o/OvPNqC9CX4ez9IxpqfaePkcUU0IOr2Zm'
   }
 }
+var rooms = {}
 // res.redirect(`/${uuidv4()}`)
 
 app.use(session({
@@ -44,7 +49,7 @@ app.get('/register', (req,res)=>{
     res.render('register')
 })
 app.get('/room', (req,res)=>{
-    res.redirect(`/${uuidv4()}`)
+    res.redirect(`/rooms/${uuidv4()}`)
 })
 app.get('/home', (req,res)=>{
     if(req.session.isloggedin == true){
@@ -61,7 +66,6 @@ app.post('/register', async (req,res)=>{
     }
     else if((req.body.username in users)){
         res.json({isregistered : "false", status : "Username already exists"})
-        console.log("username already exists")
     }
     else{
         const hashedpassword = await bcrypt.hash(req.body.password, 10)
@@ -94,12 +98,18 @@ app.post('/login', async (req, res)=>{
 
 })
 app.post('/joinroom', (req,res)=>{
-    console.log(req.body)
-    res.redirect(`/${req.body.room}`)
+    res.redirect(`/rooms/${req.body.room}`)
 })
 
-app.get('/:room', function(req, res){
+app.get('/rooms/:room', function(req, res){
     if(req.session.isloggedin){
+        if(rooms[req.params.rooms] == undefined){
+            rooms[req.params.room]={users:[]}
+            rooms[req.params.room].nos = 0
+        }
+        rooms[req.params.room].nos++
+        rooms[req.params.room].users.push(req.session.username)
+        console.log(rooms)
         res.render('app', {key : req.params.room, name:users[req.session.username].name})
     }
     else{
@@ -109,12 +119,16 @@ app.get('/:room', function(req, res){
 
 io.on('connection', function(socket){
     socket.on('joinrequest', function(clientdata){
-        console.log(clientdata.name + " connected")
+        console.log(clientdata.name + " joined")
         socket.join(clientdata.room)
-        socket.broadcast.to(clientdata.room).emit('clientjoined', { id : clientdata.id, name : clientdata.name})
-        socket.on('disconnect', function(reason){
-            console.log(clientdata.name + " disconnected due to "+reason)
-            socket.broadcast.to(clientdata.room).emit('clientdisconnected', { id : clientdata.id, name : clientdata.name })
+        socket.broadcast.to(clientdata.room).emit('clientjoined', clientdata.name)
+        socket.on("joinrequest-video", function(){
+            console.log(clientdata.name+" joining video")
+            socket.broadcast.to(clientdata.room).emit('clientjoined-video', { id : clientdata.id, name : clientdata.name})
+            socket.on('disconnect', function(reason){
+                console.log(clientdata.name + " disconnected due to "+reason)
+                socket.broadcast.to(clientdata.room).emit('clientdisconnected', { id : clientdata.id, name : clientdata.name })
+            })
         })
         socket.on('text-c2s', function(text){
             socket.broadcast.to(clientdata.room).emit('text-s2c', text)

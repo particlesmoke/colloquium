@@ -5,14 +5,19 @@ document.getElementById('chat-form').addEventListener('submit', function(e){
     sendmessage(chatinput.value)
     chatinput.value = ''
 })
-function sendmessage(text){
-    socket.emit('text-c2s', {text: text, name: myname})
-    addmytext(text)
-}
+
 socket.on('text-s2c', function(text){
     addtheirtext(text.text,text.name)
 
 })
+
+socket.on("clientjoined", function(name){
+    const notifier = document.createElement('div')
+    notifier.className = 'joincall-notifier'
+    notifier.innerHTML = `<b>${name}</b> has joined the room`
+    document.getElementById('chats-container').append(notifier)
+})
+
 
 let lastsender = ''
 var lastchat = document.createElement('div')
@@ -56,4 +61,9 @@ function addtheirtext(text, sender){
     }else{
         lastchat.append(newtext)
     }
+}
+
+function sendmessage(text){
+    socket.emit('text-c2s', {text: text, name: myname})
+    addmytext(text)
 }

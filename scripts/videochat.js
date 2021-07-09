@@ -2,21 +2,21 @@ const socket = io('/')
 
 const myvideo = document.getElementById("my-video")
 const vidlist = document.getElementById("list-of-videos")
-const endcallbutton = document.getElementById("endcall-button")
-const startcallbutton = document.getElementById("startcall-button")
+const leavecallbutton = document.getElementById("leavecall-button")
+const joincallbutton = document.getElementById("joincall-button")
 const screensharebutton = document.getElementById("screenshare-button")
 
 // var myname = prompt("What's your name?")
 //var myname = 'Jayesh'
 var connected_clients = {}
 
-var tisme = new Peer(undefined,{
+var peer = new Peer(undefined,{
     host: '/',
     port: '3000',
     secure: true
 })
 
-tisme.on('open', function(id){
+peer.on('open', function(id){
     socket.emit('joinrequest', {room : room, id : id, name: myname})
 })
 
@@ -27,42 +27,39 @@ navigator.mediaDevices.getUserMedia({
 }).then(function(mystream) {
     myvideo.srcObject = mystream
     myvideo.play()
+    joincallbutton.addEventListener('click', function(){
+        socket.emit("joinrequest-video")
 
-    tisme.on('call', function(call){
-        console.log("being called by " + call.metadata.name)
-        connected_clients[call.peer] = call.metadata.name
-        call.answer(mystream)
-        const videoelement = adduservid(call.metadata.name, call.peer)
-        call.on('stream', function(theirstream){
-            assignuservid(videoelement, theirstream)
+        socket.on('clientjoined-video', function(clientdata){
+            console.log(clientdata.name + ' has joined')
+            connected_clients[clientdata.id] = clientdata.name
+            setTimeout(() => {
+                var call = peer.call(clientdata.id, mystream, {metadata: {name:myname, type:'camera'}})
+                //console.log("call made to "+ newclientdata.id)
+                const videoelement = adduservid(clientdata.name, clientdata.id) //this element may be removed when desired by videoelement.remove()
+                call.on('stream', function(theirstream){
+                    //console.log("getting stream")
+                    assignuservid(videoelement, theirstream)           
+                })
+            }, 400)
         })
-        endcallbutton.addEventListener('click',function(){
-            call.close()
+        
+        peer.on('call', function(call){
+            console.log("being called by " + call.metadata.name)
+            connected_clients[call.peer] = call.metadata.name
+            call.answer(mystream)
+            const videoelement = adduservid(call.metadata.name, call.peer)
+            call.on('stream', function(theirstream){
+                assignuservid(videoelement, theirstream)
+            })
+        })
+        socket.on('clientdisconnected', function(clientdata){
+            //console.log(clientdata.name + " disconnected")
+            delete connected_clients[clientdata.id]
+            document.getElementById(clientdata.id).remove()
         })
     })
     
-    socket.on('clientjoined', function(clientdata){
-        console.log(clientdata.name + ' has joined')
-        connected_clients[clientdata.id] = clientdata.name
-        setTimeout(() => {
-            var call = tisme.call(clientdata.id, mystream, {metadata: {name:myname, type:'camera'}})
-            //console.log("call made to "+ newclientdata.id)
-            const videoelement = adduservid(clientdata.name, clientdata.id) //this element may be removed when desired by videoelement.remove()
-            call.on('stream', function(theirstream){
-                //console.log("getting stream")
-                assignuservid(videoelement, theirstream)           
-            })
-            call.on('close', function(){
-                console.log("call closed")
-            })
-        }, 400)
-    })
-
-    socket.on('clientdisconnected', function(clientdata){
-        //console.log(clientdata.name + " disconnected")
-        delete connected_clients[clientdata.id]
-        document.getElementById(clientdata.id).remove()
-    })
 })
 
 
@@ -70,12 +67,12 @@ screensharebutton.addEventListener('click', function(){
     navigator.mediaDevices.getDisplayMedia().then(function(myscreenstream){
         for(let id in connected_clients){
             //console.log("sharing screen with " + connected_clients[id])
-            tisme.call(id, myscreenstream, {metadata: {name:myname, type:'screen'}}) 
+            peer.call(id, myscreenstream, {metadata: {name:myname, type:'screen'}}) 
         }
         socket.on('clientjoined', function(clientdata){
             //console.log("sharing screen with " + clientdata.name)
             setTimeout(() => {
-                tisme.call(clientdata.id, myscreenstream, {metadata: {name:myname, type:'screen'}})
+                peer.call(clientdata.id, myscreenstream, {metadata: {name:myname, type:'screen'}})
             }, 500)
         })
     })

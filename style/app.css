@@ -21,8 +21,13 @@ body{
 }
 
 /* text-chat */
+.joincall-notifier{
+    text-align: center;
+    padding: 5%;
+}
+
 #chats-container{
-    height: 95%;
+    height: 95vh;
 }
 
 .chatblock{
