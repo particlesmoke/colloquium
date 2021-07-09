@@ -1,4 +1,4 @@
-document.getElementById('user-button').addEventListener('click',function(){
+document.getElementById('register-button').addEventListener('click',function(){
     fetch('/register', {
         body: new FormData(document.getElementById('register-form')),
         method:'post'

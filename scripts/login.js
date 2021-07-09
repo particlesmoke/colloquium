@@ -1,4 +1,4 @@
-document.getElementById('user-button').addEventListener('click',function(){
+document.getElementById('login-button').addEventListener('click',function(){
     fetch('/login', {
         
         body: new FormData(document.getElementById('login-form')),
