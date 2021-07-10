@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VC WebApp</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Sofia">
-    <link rel="stylesheet" href="/app.css">
     <link rel="stylesheet" href="/interface.css">
+    <link rel="stylesheet" href="/app.css">
     <script type="text/javascript">
         // window.addEventListener('beforeunload', function (e) {
         //     e.preventDefault();
@@ -19,6 +19,7 @@
     <script> 
         const room = "<%= key %>"
         const myname = "<%= name %>"
+        const myusername = "<%= username %>"
         navigator.clipboard.writeText(room)
     </script>
     <script defer src="/videochat.js"></script>
@@ -28,10 +29,12 @@
     </style>
 </head>
 <body>
+    <div id="control-bar">
+        <button id="screenshare-button" class="control-button">Share screen</button>
+        <button id="joincall-button" class="control-button">Join call</button>
+    </div>
+    <button id="openchat-button">Open chat</button>
     <div id="video-chat">
-        <button id="screenshare-button">Share screen</button>
-        <button id="startcall-button">Join call</button>
-        <button id="endcall-button">Leave call</button>
         <ul id="list-of-videos">
             <li class="video-container"><video id="my-video" muted></video></li>
         </ul>

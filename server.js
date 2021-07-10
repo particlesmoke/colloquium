@@ -15,11 +15,11 @@ const bcrypt = require('bcrypt')
 const session = require('express-session')
 var users = {
     a: {
-    name: 'a',
+    name: 'John',
     hashedpassword: '$2b$10$u6riWXoC8adVxf1d9G0dJeJ6hvRvH.6y5mVd036fvyHZEqybXxi1K'
   },
   q: {
-    name: 'q',
+    name: 'Sasha',
     hashedpassword: '$2b$10$LfQBWAx9NV1.QmLdm59o/OvPNqC9CX4ez9IxpqfaePkcUU0IOr2Zm'
   }
 }
@@ -34,7 +34,6 @@ app.use(session({
 }))
 app.use(express.static('scripts'))
 app.use(express.static('style'))
-app.use(express.static('fonts'))
 app.use(express.urlencoded({ extended: false }))
 app.use(upload.none())
 app.set('view engine', 'ejs')
@@ -49,7 +48,7 @@ app.get('/register', (req,res)=>{
     res.render('register')
 })
 app.get('/room', (req,res)=>{
-    res.redirect(`/rooms/${uuidv4()}`)
+    res.redirect(`/room/${uuidv4()}`)
 })
 app.get('/home', (req,res)=>{
     if(req.session.isloggedin == true){
@@ -98,10 +97,10 @@ app.post('/login', async (req, res)=>{
 
 })
 app.post('/joinroom', (req,res)=>{
-    res.redirect(`/rooms/${req.body.room}`)
+    res.redirect(`/room/${req.body.room}`)
 })
 
-app.get('/rooms/:room', function(req, res){
+app.get('/room/:room', function(req, res){
     if(req.session.isloggedin){
         if(rooms[req.params.rooms] == undefined){
             rooms[req.params.room]={users:[]}
@@ -110,7 +109,7 @@ app.get('/rooms/:room', function(req, res){
         rooms[req.params.room].nos++
         rooms[req.params.room].users.push(req.session.username)
         console.log(rooms)
-        res.render('app', {key : req.params.room, name:users[req.session.username].name})
+        res.render('app', {key : req.params.room, name:users[req.session.username].name, username:req.session.username})
     }
     else{
         res.redirect('/login')
@@ -121,14 +120,17 @@ io.on('connection', function(socket){
     socket.on('joinrequest', function(clientdata){
         console.log(clientdata.name + " joined")
         socket.join(clientdata.room)
-        socket.broadcast.to(clientdata.room).emit('clientjoined', clientdata.name)
-        socket.on("joinrequest-video", function(){
-            console.log(clientdata.name+" joining video")
-            socket.broadcast.to(clientdata.room).emit('clientjoined-video', { id : clientdata.id, name : clientdata.name})
-            socket.on('disconnect', function(reason){
-                console.log(clientdata.name + " disconnected due to "+reason)
-                socket.broadcast.to(clientdata.room).emit('clientdisconnected', { id : clientdata.id, name : clientdata.name })
-            })
+        socket.broadcast.to(clientdata.room).emit('clientjoined', clientdata)
+        socket.on("joinrequest-call", function(){
+            console.log(clientdata.name+" joining call")
+            socket.broadcast.to(clientdata.room).emit('clientjoined-call', clientdata)
+        })
+        socket.on("leaverequest-call", function(clientdata){
+            socket.broadcast.to(clientdata.room).emit('clientleft-call', clientdata)
+        })
+        socket.on('disconnect', function(reason){
+            console.log(clientdata.name + " disconnected due to "+reason)
+            socket.broadcast.to(clientdata.room).emit('clientleft', clientdata)
         })
         socket.on('text-c2s', function(text){
             socket.broadcast.to(clientdata.room).emit('text-s2c', text)
