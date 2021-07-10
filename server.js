@@ -128,9 +128,14 @@ io.on('connection', function(socket){
         socket.on("leaverequest-call", function(clientdata){
             socket.broadcast.to(clientdata.room).emit('clientleft-call', clientdata)
         })
+        socket.on("endingscreenshare", function(clientdata){
+            socket.broadcast.to(clientdata.room).emit('clientleft-screenshare', clientdata)
+        })
         socket.on('disconnect', function(reason){
             console.log(clientdata.name + " disconnected due to "+reason)
             socket.broadcast.to(clientdata.room).emit('clientleft', clientdata)
+            rooms[clientdata.room].nos--
+            delete rooms[clientdata.room][users][clientdata.username]
         })
         socket.on('text-c2s', function(text){
             socket.broadcast.to(clientdata.room).emit('text-s2c', text)

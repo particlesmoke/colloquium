@@ -9,22 +9,18 @@ document.getElementById('chat-form').addEventListener('submit', function(e){
 
 
 socket.on("clientjoined", function(clientdata){
-    addtime()
     notify(clientdata.name, 'joined the room')
 })
 
 socket.on("clientleft", function(clientdata){
-    addtime()
     notify(clientdata.name, 'left the room')
 })
 
 socket.on("clientjoined-call", function(clientdata){
-    addtime()
     notify(clientdata.name, 'joined the call')
 })
 
 socket.on("clientleft-call", function(clientdata){
-    addtime()
     notify(clientdata.name, 'left the call')
 })
 
@@ -89,6 +85,7 @@ function sendmessage(text){
 }
 
 function notify(name, action){
+    addtime()
     let grammar = "has"
     if(name=="you"){
         grammar = "have"
