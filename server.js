@@ -144,6 +144,4 @@ io.on('connection', function(socket){
     })
 })
 
-var port = process.env.port || 1337;
-
-server.listen(port)
+server.listen(process.env.PORT || 5000)
