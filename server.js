@@ -8,7 +8,7 @@ const options = {
 const server = require('http').createServer(app)
 const { Server } = require('socket.io')
 const io = new Server(server)
-const { v4: uuidv4} = require('uuid')
+const { v4: uuidv4 } = require('uuid')
 const multer = require('multer');
 const upload = multer();
 const bcrypt = require('bcrypt')
@@ -19,7 +19,7 @@ var users = {
     hashedpassword: '$2b$10$u6riWXoC8adVxf1d9G0dJeJ6hvRvH.6y5mVd036fvyHZEqybXxi1K'
   },
   q: {
-    name: 'Sasha',
+    name: 'Sashaa',
     hashedpassword: '$2b$10$LfQBWAx9NV1.QmLdm59o/OvPNqC9CX4ez9IxpqfaePkcUU0IOr2Zm'
   }
 }
