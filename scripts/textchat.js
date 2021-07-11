@@ -106,3 +106,7 @@ function addtime(){
     time.innerHTML = `${h}:${m}`
     document.getElementById('chats-container').append(time)
 }
+
+function scrolltobottom(){
+    chatscontainer.scrollTop = chatscontainer.scrollHeight
+}
