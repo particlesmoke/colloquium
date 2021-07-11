@@ -135,7 +135,7 @@ io.on('connection', function(socket){
             console.log(clientdata.name + " disconnected due to "+reason)
             socket.broadcast.to(clientdata.room).emit('clientleft', clientdata)
             rooms[clientdata.room].nos--
-            delete rooms[clientdata.room][users][clientdata.username]
+            // delete rooms[clientdata.room][users][clientdata.username]
         })
         socket.on('text-c2s', function(text){
             socket.broadcast.to(clientdata.room).emit('text-s2c', text)
