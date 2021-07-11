@@ -67,6 +67,9 @@ navigator.mediaDevices.getUserMedia({
             peer.removeAllListeners('call')
             for(let id in clientsincall){
                 document.getElementById(id).remove()
+                if(document.getElementById(id+'screen')!=null){
+                    document.getElementById(id+'screen').remove()
+                }
                 peer.connections[id].forEach(connection => {
                     connection.peerConnection.close()
                 });

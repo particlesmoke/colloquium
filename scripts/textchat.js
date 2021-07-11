@@ -85,9 +85,10 @@ function sendmessage(text){
 }
 
 function notify(name, action){
+    lastsender = ''
     addtime()
     let grammar = "has"
-    if(name=="you"){
+    if(name=="You"){
         grammar = "have"
     }
     const notifier = document.createElement('div')
