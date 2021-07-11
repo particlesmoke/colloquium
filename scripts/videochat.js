@@ -63,7 +63,10 @@ navigator.mediaDevices.getUserMedia({
             joincallbutton.style.backgroundColor="#216383"
             incall = false
             socket.emit('leaverequest-call', {room : room, id : peer.id, name: myname, username : myusername})
-            socket.removeAllListeners('clientjoined-call');
+            socket.removeAllListeners('clientjoined-call')
+            if(sharingscreen){
+                stopscreenshare()
+            }
             peer.removeAllListeners('call')
             for(let id in clientsincall){
                 document.getElementById(id).remove()
@@ -114,47 +117,69 @@ socket.on('clientleft-call', function(clientdata){
 })
 
 socket.on("clientleft-screenshare", function(clientdata){
-    peer.connections[clientdata.id][1].peerConnection.close()
+    if(peer.connections[clientdata.id][1]!=null){
+        peer.connections[clientdata.id][1].peerConnection.close()
+        peer.connections[clientdata.id][1].close()
+    }
+    else{
+        peer.connections[clientdata.id][0].peerConnection.close()
+        peer.connections[clientdata.id][0].close()
+    }
     document.getElementById(clientdata.id+'screen').remove()
 })
 
 
 screensharebutton.onclick = function(){
     if(!sharingscreen && incall){
-        sharingscreen=true
-        screensharebutton.innerHTML = "Stop sharing"
-        screensharebutton.style.backgroundColor="rgb(255, 79, 79)"
-        navigator.mediaDevices.getDisplayMedia().then(function(myscreenstream){
-            for(let id in clientsincall){
-                //console.log("sharing screen with " + clientsincall[id])
-                peer.call(id, myscreenstream, {metadata: {name:myname, type:'screen'}}) 
-            }
-            socket.on('clientjoined-call', function(clientdata){
-                //console.log("sharing screen with " + clientdata.name)
-                peer.call(clientdata.id, myscreenstream, {metadata: {name:myname, type:'screen'}})
-            })
-            screensharebutton.addEventListener('click', function(){
-                const tracks = myscreenstream.getTracks()
-                tracks.forEach(track=> track.stop())
-            }, {once: true})
-
-        })
+        screenshare()
     }
     else if(!sharingscreen && !incall){
         alert("Please join the call to share screen")
     }
     else if(sharingscreen && incall){
-        sharingscreen=false
-        screensharebutton.innerHTML = "Share screen"
-        screensharebutton.style.backgroundColor="#216383"
-        socket.emit("endingscreenshare", {room : room, id : peer.id, name: myname, username : myusername})
-        for(let id in clientsincall){
-            peer.connections[id][1].peerConnection.close()
-        }
+        stopscreenshare()
     }
     else if(sharingscreen && !incall){
 
     }
+}
+
+function screenshare(){
+    sharingscreen=true
+    screensharebutton.innerHTML = "Stop sharing"
+    screensharebutton.style.backgroundColor="rgb(255, 79, 79)"
+    navigator.mediaDevices.getDisplayMedia().then(function(myscreenstream){
+        for(let id in clientsincall){
+            //console.log("sharing screen with " + clientsincall[id])
+            const call = peer.call(id, myscreenstream, {metadata: {name:myname, type:'screen'}}) 
+            screensharebutton.addEventListener('click', function(){
+                call.close()
+            }, {once: true})
+        }
+        socket.on('clientjoined-call', function(clientdata){
+            //console.log("sharing screen with " + clientdata.name)
+            const call = peer.call(clientdata.id, myscreenstream, {metadata: {name:myname, type:'screen'}})
+            screensharebutton.addEventListener('click', function(){
+                call.close()
+            }, {once: true})
+        })
+        screensharebutton.addEventListener('click', function(){
+            const tracks = myscreenstream.getTracks()
+            tracks.forEach(track=> track.stop())
+        }, {once: true})
+
+    })
+}
+
+function stopscreenshare(){
+    sharingscreen=false
+    screensharebutton.innerHTML = "Share screen"
+    screensharebutton.style.backgroundColor="#216383"
+    socket.emit("endingscreenshare", {room : room, id : peer.id, name: myname, username : myusername})
+    // for(let id in clientsincall){
+    //     peer.connections[id][1].peerConnection.close()
+    //     peer.connections[id][1].close()
+    // }
 }
 
 
