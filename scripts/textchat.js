@@ -54,6 +54,7 @@ function addmytext(text){
     else{
         lastchat.append(newtext);
     }
+    scrolltobottom()
 }
 
 function addtheirtext(text, sender){
@@ -77,6 +78,7 @@ function addtheirtext(text, sender){
     }else{
         lastchat.append(newtext)
     }
+    scrolltobottom()
 }
 
 function sendmessage(text){
@@ -95,6 +97,7 @@ function notify(name, action){
     notifier.className = 'intext-notifier'
     notifier.innerHTML = `<b>${name}</b> ${grammar} ${action}`
     document.getElementById('chats-container').append(notifier)
+    scrolltobottom()
 }
 
 function addtime(){
