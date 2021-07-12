@@ -12,10 +12,7 @@ const { v4: uuidv4 } = require('uuid')
 const multer = require('multer');
 const upload = multer();
 const bcrypt = require('bcrypt')
-const redis = require('redis')
 const session = require('express-session')
-let RedisStore = require('connect-redis')(session)
-let redisClient = redis.createClient()
 
 //Statuses are online, inroom, incall and offline
 var users = {
@@ -37,8 +34,7 @@ app.use(session({
     secret : "olaaaaa",
     secure: false,
     saveUninitialized : false,
-    resave: false,
-    store : new RedisStore({client : redisClient})
+    resave: false
 }))
 app.use(express.static('scripts'))
 app.use(express.static('style'))
