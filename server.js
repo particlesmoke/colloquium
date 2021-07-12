@@ -160,8 +160,13 @@ io.on('connection', function(socket){
                 rooms[clientdata.room].nosincall--
                 delete rooms[clientdata.room].usersincall[clientdata.username]
             }
-            if(rooms[clientdata.room].nos == 0){ //dry run and check
-                delete rooms[clientdata.room]
+            try{
+                if(rooms[clientdata.room].nos == 0){ //dry run and check
+                    delete rooms[clientdata.room]
+                }
+            }
+            catch(err){
+                console.log("fix this erooorrrr")
             }
             users[clientdata.username].status = "offline"
         })

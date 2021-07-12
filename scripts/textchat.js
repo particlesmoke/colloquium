@@ -8,19 +8,19 @@ document.getElementById('chat-form').addEventListener('submit', function(e){
 })
 
 socket.on("clientjoined", function(clientdata){
-    notify(clientdata.name, 'has joined the room')
+    notify(clientdata.name, ' joined the room')
 })
 
 socket.on("clientleft", function(clientdata){
-    notify(clientdata.name, 'has left the room')
+    notify(clientdata.name, ' left the room')
 })
 
 socket.on("clientjoined-call", function(clientdata){
-    notify(clientdata.name, 'has joined the call')
+    notify(clientdata.name, ' joined the call')
 })
 
 socket.on("clientleft-call", function(clientdata){
-    notify(clientdata.name, 'has left the call')
+    notify(clientdata.name, ' left the call')
 })
 
 socket.on('text-s2c', function(text){
@@ -36,7 +36,7 @@ notify("You", 'have joined the room')
 openchatbutton.onclick = function(){
     if(!chatopen){
         chatopen = true
-        openchatbutton.innerHTML = "<i class=\"fas fa-arrow-circle-left\"></i>"
+        openchatbutton.innerHTML = "<i class=\"fas fa-arrow-left\"></i>"
         const textchatdiv = document.getElementById("text-chat")
         const videochatdiv = document.getElementById("video-chat")
         textchatdiv.style.width = "100%"
@@ -60,6 +60,7 @@ function addmytext(text){
     chatblock.className = 'chatblock'
     const newtext = document.createElement('div')
     newtext.innerHTML=text
+    newtext.className = "chattext"
     if(lastsender!='me'){
         addtime()
         const chat = document.createElement('div')
@@ -80,6 +81,7 @@ function addtheirtext(text, sender){
     const chatblock = document.createElement('div')
     chatblock.className = 'chatblock'
     const newtext = document.createElement('div')
+    newtext.className = "chattext"
     newtext.innerHTML=text
     if(lastsender!=sender){
         addtime()
@@ -164,8 +166,12 @@ fetch('/roominfo').then(res=>{
         notify('No one is in the call', '')
     }
     else{
-        calloccupantsnotifier.innerHTML = "Call occupants: " + calllist
-        notify('Call occupants', calllist)
+        notify('Call occupants: ', calllist)
     }
-
+}).catch(err=>{
+    console.log("Server not responding")
 })
+
+function copyroom(){
+    navigator.clipboard.writeText(room)
+}
