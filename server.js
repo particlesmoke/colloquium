@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const fs = require('fs');
+//const fs = require('fs');
 // const options = {
 //     key: fs.readFileSync(__dirname+'\\localhost-key.pem'),
 //     cert: fs.readFileSync(__dirname+'\\localhost.pem')
@@ -12,7 +12,11 @@ const { v4: uuidv4 } = require('uuid')
 const multer = require('multer');
 const upload = multer();
 const bcrypt = require('bcrypt')
+const redis = require('redis')
 const session = require('express-session')
+let RedisStore = require('connect-redis')(session)
+let redisClient = redis.createClient()
+
 //Statuses are online, inroom, incall and offline
 var users = {
     a: {
@@ -34,6 +38,7 @@ app.use(session({
     secure: false,
     saveUninitialized : false,
     resave: false,
+    store : new RedisStore({client : redisClient})
 }))
 app.use(express.static('scripts'))
 app.use(express.static('style'))
@@ -71,7 +76,7 @@ app.post('/register', async (req,res)=>{
     }
     else{
         const hashedpassword = await bcrypt.hash(req.body.password, 10)
-        users[req.body.username] = {name:req.body.name, hashedpassword:hashedpassword}
+        users[req.body.username] = {name:req.body.name, hashedpassword:hashedpassword, status:'offline'}
         res.json({isregistered : "true", status : "Registered successfully, being redirected to login"})
         console.log(users)
     }   
@@ -142,7 +147,7 @@ io.on('connection', function(socket){
             socket.broadcast.to(clientdata.room).emit('clientleft-call', clientdata)
             rooms[clientdata.room].nosincall--
             delete rooms[clientdata.room].usersincall[clientdata.username]
-            users[clientdata.room].status = "inroom"
+            users[clientdata.username].status = "inroom"
         })
         socket.on("endingscreenshare", function(clientdata){
             socket.broadcast.to(clientdata.room).emit('clientleft-screenshare', clientdata)
