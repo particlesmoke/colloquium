@@ -7,21 +7,20 @@ document.getElementById('chat-form').addEventListener('submit', function(e){
     chatinput.value = ''
 })
 
-
 socket.on("clientjoined", function(clientdata){
-    notify(clientdata.name, 'joined the room')
+    notify(clientdata.name, 'has joined the room')
 })
 
 socket.on("clientleft", function(clientdata){
-    notify(clientdata.name, 'left the room')
+    notify(clientdata.name, 'has left the room')
 })
 
 socket.on("clientjoined-call", function(clientdata){
-    notify(clientdata.name, 'joined the call')
+    notify(clientdata.name, 'has joined the call')
 })
 
 socket.on("clientleft-call", function(clientdata){
-    notify(clientdata.name, 'left the call')
+    notify(clientdata.name, 'has left the call')
 })
 
 socket.on('text-s2c', function(text){
@@ -31,9 +30,29 @@ socket.on('text-s2c', function(text){
 let lastsender = ''
 var lastchat = document.createElement('div')
 var ischatopen = false
+var chatopen = false
+notify("You", 'have joined the room')
+
 openchatbutton.onclick = function(){
-    document.getElementById("text-chat").style.width = "100%"
-    document.getElementById("video-chat").style.width = "0%"
+    if(!chatopen){
+        chatopen = true
+        openchatbutton.innerHTML = "<i class=\"fas fa-arrow-circle-left\"></i>"
+        const textchatdiv = document.getElementById("text-chat")
+        const videochatdiv = document.getElementById("video-chat")
+        textchatdiv.style.width = "100%"
+        textchatdiv.style.opacity = "100%"
+        videochatdiv.style.width = "0%"
+    }
+    else{
+        chatopen = false
+        openchatbutton.innerHTML = "<i class=\"fas fa-comments\"></i>"
+        const textchatdiv = document.getElementById("text-chat")
+        const videochatdiv = document.getElementById("video-chat")
+        textchatdiv.style.width = "0"
+        textchatdiv.style.opacity = "0"
+        videochatdiv.style.width = "100%"
+
+    }
 }
 
 function addmytext(text){
@@ -89,14 +108,10 @@ function sendmessage(text){
 function notify(name, action){
     lastsender = ''
     addtime()
-    let grammar = "has"
-    if(name=="You"){
-        grammar = "have"
-    }
     const notifier = document.createElement('div')
     notifier.className = 'intext-notifier'
-    notifier.innerHTML = `<b>${name}</b> ${grammar} ${action}`
-    document.getElementById('chats-container').append(notifier)
+    notifier.innerHTML = `<b>${name}</b> ${action}`
+    chatscontainer.append(notifier)
     scrolltobottom()
 }
 
@@ -107,9 +122,50 @@ function addtime(){
     const h = date.getHours()
     const m = date.getMinutes()
     time.innerHTML = `${h}:${m}`
-    document.getElementById('chats-container').append(time)
+    chatscontainer.append(time)
 }
 
 function scrolltobottom(){
     chatscontainer.scrollTop = chatscontainer.scrollHeight
 }
+
+fetch('/roominfo').then(res=>{
+    return res.json()
+}).then(res=>{
+    console.log(res)
+    var roomlist = ''
+    for(username in res.users){
+        clientsinroom[username] = res.users[username]
+        if(roomlist=='' && username!=myusername){
+            roomlist = `<b>${clientsinroom[username]}</b>`
+        }
+        else{
+            if(username!=myusername){
+                roomlist = `${roomlist}, <b>${clientsinroom[username]}</b>`
+            }
+        }
+    }
+    var calllist = ''
+    for(username in res.usersincall){
+        if(calllist=='' && username!=myusername){
+            calllist = `<b>${clientsinroom[username]}</b>`
+        }
+        else{
+                calllist = `${calllist}, <b>${clientsinroom[username]}</b>`
+        }
+    }
+    if(res.nos==1){
+        notify('Only you are in this room', '')
+    }
+    else{
+        notify('Room occupants: ', roomlist)
+    }
+    if(res.nosincall==0){
+        notify('No one is in the call', '')
+    }
+    else{
+        calloccupantsnotifier.innerHTML = "Call occupants: " + calllist
+        notify('Call occupants', calllist)
+    }
+
+})

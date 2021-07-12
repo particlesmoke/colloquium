@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VC WebApp</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Sofia">
+    <title>Colloquium</title>
+    <script src="https://kit.fontawesome.com/6f0f1bb31d.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="/interface.css">
     <link rel="stylesheet" href="/app.css">
     <script type="text/javascript">
@@ -32,12 +32,14 @@
     <div id="control-bar">
         <button id="screenshare-button" class="control-button">Share screen</button>
         <button id="joincall-button" class="control-button">Join call</button>
+        <button id="mute-button" class="control-button"><i class="fas fa-microphone"></i></button>
+        <button id="camera-button" class="control-button"><i class="fas fa-video"></i></button>
     </div>
-    <button id="openchat-button">Open chat</button>
+    <button id="openchat-button" class="control-button"><i class="fas fa-comments"></i></button>
     <div id="video-chat">
-        <ul id="list-of-videos">
-            <li class="video-container"><video id="my-video" muted></video></li>
-        </ul>
+        <div id="grid-of-videos">
+            <div class="video-container"><video id="my-video" muted></video></div>
+        </div>
     </div>
     <div id="text-chat">
         <div id="chats-container"></div>

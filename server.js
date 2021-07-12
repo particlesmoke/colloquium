@@ -13,14 +13,17 @@ const multer = require('multer');
 const upload = multer();
 const bcrypt = require('bcrypt')
 const session = require('express-session')
+//Statuses are online, inroom, incall and offline
 var users = {
     a: {
     name: 'John',
-    hashedpassword: '$2b$10$u6riWXoC8adVxf1d9G0dJeJ6hvRvH.6y5mVd036fvyHZEqybXxi1K'
+    hashedpassword: '$2b$10$u6riWXoC8adVxf1d9G0dJeJ6hvRvH.6y5mVd036fvyHZEqybXxi1K',
+    status: 'offline'
   },
   q: {
     name: 'Sashaa',
-    hashedpassword: '$2b$10$LfQBWAx9NV1.QmLdm59o/OvPNqC9CX4ez9IxpqfaePkcUU0IOr2Zm'
+    hashedpassword: '$2b$10$LfQBWAx9NV1.QmLdm59o/OvPNqC9CX4ez9IxpqfaePkcUU0IOr2Zm',
+    status: 'offline'
   }
 }
 var rooms = {}
@@ -90,11 +93,15 @@ app.post('/login', async (req, res)=>{
             else{
                 req.session.isloggedin = true
                 req.session.username = req.body.username
+                users[req.body.username].status = "online"
                 res.json({isloggedin: "true", status: "Logged in successfully"})
             }
         }
     }
 
+})
+app.get('/roominfo', (req, res)=>{
+    res.json(rooms[req.session.room])
 })
 app.post('/joinroom', (req,res)=>{
     res.redirect(`/room/${req.body.room}`)
@@ -102,13 +109,17 @@ app.post('/joinroom', (req,res)=>{
 
 app.get('/room/:room', function(req, res){
     if(req.session.isloggedin){
-        if(rooms[req.params.rooms] == undefined){
-            rooms[req.params.room]={users:[]}
+        console.log(req.session.username+" is joining room "+req.params.room)
+        req.session.room = req.params.room
+        if(rooms[req.params.room] == undefined){
+            rooms[req.params.room]={users:{}, usersincall:{}}
             rooms[req.params.room].nos = 0
+            rooms[req.params.room].nosincall = 0
         }
         rooms[req.params.room].nos++
-        rooms[req.params.room].users.push(req.session.username)
-        console.log(rooms)
+        rooms[req.params.room].users[req.session.username] =users[req.session.username].name
+        users[req.session.username].status = "inroom"
+        users[req.session.username].room = req.params.room
         res.render('app', {key : req.params.room, name:users[req.session.username].name, username:req.session.username})
     }
     else{
@@ -118,15 +129,20 @@ app.get('/room/:room', function(req, res){
 
 io.on('connection', function(socket){
     socket.on('joinrequest', function(clientdata){
-        console.log(clientdata.name + " joined")
         socket.join(clientdata.room)
         socket.broadcast.to(clientdata.room).emit('clientjoined', clientdata)
         socket.on("joinrequest-call", function(){
             console.log(clientdata.name+" joining call")
             socket.broadcast.to(clientdata.room).emit('clientjoined-call', clientdata)
+            rooms[clientdata.room].nosincall++
+            rooms[clientdata.room].usersincall[clientdata.username] =users[clientdata.username].name
+            users[clientdata.username].status = "incall"
         })
         socket.on("leaverequest-call", function(clientdata){
             socket.broadcast.to(clientdata.room).emit('clientleft-call', clientdata)
+            rooms[clientdata.room].nosincall--
+            delete rooms[clientdata.room].usersincall[clientdata.username]
+            users[clientdata.room].status = "inroom"
         })
         socket.on("endingscreenshare", function(clientdata){
             socket.broadcast.to(clientdata.room).emit('clientleft-screenshare', clientdata)
@@ -134,12 +150,23 @@ io.on('connection', function(socket){
         socket.on('disconnect', function(reason){
             console.log(clientdata.name + " disconnected due to "+reason)
             socket.broadcast.to(clientdata.room).emit('clientleft', clientdata)
-            rooms[clientdata.room].nos--
-            // delete rooms[clientdata.room][users][clientdata.username]
+            delete users[clientdata.username].room
+            if(rooms[clientdata.room]!=undefined){
+                rooms[clientdata.room].nos--
+            }
+            console.log(rooms)
+            //delete rooms[clientdata.room].users[clientdata.username] //uncomment after locking multiple logins
+            if(users[clientdata.username].status=="incall"){
+                rooms[clientdata.room].nosincall--
+                delete rooms[clientdata.room].usersincall[clientdata.username]
+            }
+            if(rooms[clientdata.room].nos == 0){ //dry run and check
+                delete rooms[clientdata.room]
+            }
+            users[clientdata.username].status = "offline"
         })
         socket.on('text-c2s', function(text){
             socket.broadcast.to(clientdata.room).emit('text-s2c', text)
-            console.log(text)
         })
     })
 })

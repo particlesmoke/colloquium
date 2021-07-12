@@ -16,10 +16,19 @@
 
 
 body{
-    font-family: myfont;
+    font-family: myfont, sans-serif;
     background-color: #dceeed;
     margin: 0;
     overflow-x: hidden;
+}
+
+#logo{
+    position: absolute;
+    top: 25%;
+    left: 10%;
+    width: 10%;
+    min-width: 80px;
+    height: auto;
 }
 
 /* User form elements */
@@ -30,6 +39,8 @@ button{
     border-radius: 24px;
     background-color: #216383;
     color: #dceeed;
+    font-family: 'myfont', sans-serif;
+    font-weight: bold;
 }
 
 
@@ -42,7 +53,7 @@ input{
 }
 
 a{
-    font-family: myfontb;
+    font-family: myfontb, sans-serif;
     color: #216383;
     text-decoration: none;
 }
@@ -73,7 +84,7 @@ a{
 
 ::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
     color: #789392;
-    font-family: myfont ;
+    font-family: myfont, sans-serif ;
     text-align: center;
     font-size: 1.3rem;
     opacity: 1; /* Firefox */
@@ -85,7 +96,7 @@ a{
     padding: 3%;
     margin-left: 34%;
     margin-top: 4%;
-    font-family: myfontb;
+    font-family: myfontb, sans-serif;
     font-size: 1.1em;
 }
 
@@ -118,13 +129,13 @@ a{
     padding: 2%;
     position: static;
     width: 96%;
-    font-family: myfontb;
+    font-family: myfontb, sans-serif;
 }
 
 /* Welcome text */
 #welcome-text{
     position: absolute;
-    top: 35%;
+    top: 50%;
     left: 12%;
     color: #216383;
     /* border:solid; */
@@ -136,14 +147,18 @@ a{
 
 h1{
     font-size:1.4em;
-    font-family: myfontb;
+    font-family: myfontb, sans-serif;
 }
 
 @media (max-aspect-ratio: 5/4){
     #welcome-text{
         width: 70%;
         left: 15%;
-        top: 20%;
+        top: 30%;
+    }
+    #logo{
+        top: 15%;
+        left:15%
     }
     #user-form-container{
         top: 100%;
@@ -174,7 +189,7 @@ h1{
 #room-form-toptext{
     color: #216383;
     padding-top: 10%;
-    font-family: myfontb;
+    font-family: myfontb, sans-serif;
     text-align: center;
 }
 

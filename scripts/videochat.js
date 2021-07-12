@@ -1,13 +1,18 @@
 const socket = io('/')
 
 const myvideo = document.getElementById("my-video")
-const vidlist = document.getElementById("list-of-videos")
+const videogrid = document.getElementById("grid-of-videos")
 const joincallbutton = document.getElementById("joincall-button")
 const screensharebutton = document.getElementById("screenshare-button")
-var clientsincall = {}
-var clientsinroom = {}
+const mutebutton = document.getElementById("mute-button")
+const camerabutton = document.getElementById("camera-button")
+var clientsincall = {} //peerid : name
+var clientsinroom = {} //username : name
+var nosincall = 1 //Calculated locally, not linked to server
 var incall = false
 var sharingscreen = false
+var ismuted = false
+var iscameraon = true
 var peer = new Peer(undefined,{
     secure: true
 })
@@ -23,6 +28,12 @@ navigator.mediaDevices.getUserMedia({
 }).then(function(mystream) {
     myvideo.srcObject = mystream
     myvideo.play()
+    mutebutton.onclick = function(){
+        mutehandler(mystream)
+    }
+    camerabutton.onclick = function(){
+        camerahandler(mystream)
+    }
     joincallbutton.onclick = function(){
         if(incall == false){
             notify("You", "joined the call")
@@ -39,6 +50,8 @@ navigator.mediaDevices.getUserMedia({
                 call.on('stream', function(theirstream){
                     //console.log("getting stream")
                     assignuservid(videoelement, theirstream)           
+                    nosincall++
+                    arrangevideos()
                 })
             })
             
@@ -51,9 +64,12 @@ navigator.mediaDevices.getUserMedia({
                     videoelement = adduservid(call.metadata.name, call.peer)
                 }else{
                     videoelement = adduservid(call.metadata.name+'\'s screen', call.peer+'screen')
+                    notify(call.metadata.name, 'started sharing their screen')
                 }
                 call.on('stream', function(theirstream){
                     assignuservid(videoelement, theirstream)
+                    nosincall++
+                    arrangevideos()
                 })
             })
         }
@@ -80,9 +96,15 @@ navigator.mediaDevices.getUserMedia({
                     connection.close()
                 });
             }
+            nosincall = 1
+            arrangevideos()
+            clientsincall = {}
         }
     }
     
+}).catch(function(){
+    alert("Please provide access to the camera and microphone, you may turn off your audio/video before entering the call")
+    location.reload()
 })
 
 socket.on('clientjoined', function(clientdata){
@@ -93,6 +115,8 @@ socket.on('clientleft', function(clientdata){
     //console.log(clientdata.name + " disconnected")
     if(clientdata.id in clientsincall && incall){
         delete clientsincall[clientdata.id]
+        nosincall--
+        arrangevideos()
         peer.connections[clientdata.id].forEach(connection => {
             connection.peerConnection.close()
         });
@@ -100,20 +124,26 @@ socket.on('clientleft', function(clientdata){
             connection.close()
         });
         document.getElementById(clientdata.id).remove()
-        document.getElementById(clientdata.id+'screen').remove()
+        if(document.getElementById(clientdata.id+'screen')){
+            document.getElementById(clientdata.id+'screen').remove()
+        }
     }
     delete clientsinroom[clientdata.username]
 })
 
 socket.on('clientleft-call', function(clientdata){
-    delete clientsincall[clientdata.id]
-    peer.connections[clientdata.id].forEach(connection => {
-        connection.peerConnection.close()
-    });
-    peer.connections[clientdata.id].forEach(connection => {
-        connection.close()
-    });
-    document.getElementById(clientdata.id).remove()
+    if(incall){
+        delete clientsincall[clientdata.id]
+        nosincall--
+        arrangevideos()
+        peer.connections[clientdata.id].forEach(connection => {
+            connection.peerConnection.close()
+        });
+        peer.connections[clientdata.id].forEach(connection => {
+            connection.close()
+        });
+        document.getElementById(clientdata.id).remove()
+    }
 })
 
 socket.on("clientleft-screenshare", function(clientdata){
@@ -125,7 +155,9 @@ socket.on("clientleft-screenshare", function(clientdata){
         peer.connections[clientdata.id][0].peerConnection.close()
         peer.connections[clientdata.id][0].close()
     }
+    notify(clientdata.name, "has stopped sharing their screen")
     document.getElementById(clientdata.id+'screen').remove()
+    nosincall--
 })
 
 
@@ -189,15 +221,16 @@ function assignuservid(element, stream){
 }
 
 function adduservid(name, id){ 
-    const newlistelement = document.createElement("li")
-    newlistelement.className = "video-container"
-    newlistelement.id = id
+    const newvideodiv = document.createElement("div")
+    newvideodiv.className = "video-container"
+    newvideodiv.id = id
     const newnamediv = document.createElement('div')
     newnamediv.innerHTML = name
+    newnamediv.className = 'name'
     const newvideo = document.createElement("video")
-    newlistelement.append(newvideo)
-    newlistelement.append(newnamediv)
-    vidlist.append(newlistelement)
+    newvideodiv.append(newvideo)
+    newvideodiv.append(newnamediv)
+    videogrid.append(newvideodiv)
     return newvideo
 }
 
@@ -205,4 +238,52 @@ function stopcapturingscreen(stream){
     const tracks = stream.getTracks()
     tracks[0].stop()
     screensharebutton.removeEventListener('click', this)
+}
+
+function mutehandler(stream){
+    if(ismuted){
+        mutebutton.style.backgroundColor = "#216383"
+        mutebutton.innerHTML = "<i class=\"fas fa-microphone\"></i>"
+        stream.getAudioTracks()[0].enabled = true;
+        ismuted = false
+    }
+    else{
+        mutebutton.style.backgroundColor = "rgb(255, 79, 79)"
+        mutebutton.innerHTML = "<i class=\"fas fa-microphone-slash\"></i>"
+        stream.getAudioTracks()[0].enabled = false;
+        ismuted = true
+    }
+}
+function camerahandler(stream){
+    if(!iscameraon){
+        camerabutton.style.backgroundColor = "#216383"
+        camerabutton.innerHTML = "<i class=\"fas fa-video\"></i>"
+        stream.getVideoTracks()[0].enabled = true;
+        iscameraon = true
+    }
+    else{
+        camerabutton.style.backgroundColor = "rgb(255, 79, 79)"
+        camerabutton.innerHTML = "<i class=\"fas fa-video-slash\"></i>"
+        stream.getVideoTracks()[0].enabled = false;
+        iscameraon = false
+    }
+}
+
+function arrangevideos(){
+    if(nosincall==1){
+        videogrid.style.gridTemplateColumns = "repeat(1, 1fr)"
+        videogrid.style.width = "75%"
+    }
+    else if(nosincall==2){
+        videogrid.style.gridTemplateColumns = "repeat(2, 1fr)"
+        videogrid.style.width = "90%"
+    }
+    else if(nosincall>=3 && nosincall<=4){
+        videogrid.style.gridTemplateColumns = "repeat(2, 1fr)"
+        videogrid.style.width = "75%"
+    }
+    else if(nosincall>=5 && nosincall<=6){
+        videogrid.style.gridTemplateColumns = "repeat(3, 1fr)"
+        videogrid.style.width = "90%"
+    }
 }
