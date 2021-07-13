@@ -13,6 +13,7 @@ body{
     left: 0;
     top: 0;
     justify-content: center;
+    overflow-y: auto;
 }
 #text-chat{
     display: inline-block;
@@ -26,7 +27,7 @@ body{
 /* text-chat */
 .intext-notifier{
     text-align: center;
-    padding: 5%;
+    padding: 3%;
 }
 
 .intext-time{
@@ -40,7 +41,7 @@ body{
 
 #chats-container{
     height: 90vh;
-    overflow-y: auto;
+    overflow-y: scroll;
 }
 
 .chatblock{
@@ -262,5 +263,25 @@ video {
         left: 0;
         border-radius: 0;
     }
+    #chat-form{
+        bottom: 20vh;
+    }
 }
 
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.3); 
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: rgba(0,0,0,0.6); 
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.8);  
+}

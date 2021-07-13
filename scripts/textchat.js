@@ -3,7 +3,12 @@ const chatscontainer = document.getElementById('chats-container')
 const openchatbutton = document.getElementById("openchat-button")
 document.getElementById('chat-form').addEventListener('submit', function(e){
     e.preventDefault()
-    sendmessage(chatinput.value)
+    if((chatinput.value).startsWith('#invite')){
+        sendinviterequest((chatinput.value).substr(8))
+    }
+    else{
+        sendmessage(chatinput.value)
+    }
     chatinput.value = ''
 })
 
@@ -31,7 +36,6 @@ let lastsender = ''
 var lastchat = document.createElement('div')
 var ischatopen = false
 var chatopen = false
-notify("You", 'have joined the room')
 
 openchatbutton.onclick = function(){
     if(!chatopen){
@@ -174,4 +178,9 @@ fetch('/roominfo').then(res=>{
 
 function copyroom(){
     navigator.clipboard.writeText(room)
+}
+
+function sendinviterequest(username){
+    socket.emit('inviterequest',{room : room,  name: myname, username : myusername, invitee:username})
+    socket.once('inviteresponse-server', response => {notify(username, response)})
 }
