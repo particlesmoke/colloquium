@@ -9,15 +9,21 @@ if(issubscribed){
 }
 
 function optin(){
-    if(Notification.permission!="granted"){
+    if(Notification.permission=="granted"){
+        installserviceworker()    
+    }
+    else if(Notification.permission=="denied"){
+        alert("please change your notification settings")
+    }
+    else{
         Notification.requestPermission().then(res=>{
             if(res=="granted"){
                 installserviceworker()
             }
+            else{
+                alert("we can't send you notifications if you don't allow us to hehe")
+            }
         })
-    }
-    else{
-        installserviceworker()
     }
 }
 
