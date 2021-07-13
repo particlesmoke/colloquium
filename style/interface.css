@@ -188,10 +188,12 @@ h1{
 
 #newroom-button{
     width: 40%;
+    padding: 1em;
+    height: 4em;
     margin-left: 30%;
     margin-bottom: 8%;
 }
-#joinroom-button{
+.form-button{
     width: 40%;
     margin-left: 30%;
 }
