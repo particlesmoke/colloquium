@@ -1,26 +1,48 @@
+const notificationoptin = document.getElementById("notification-optin")
+
 document.getElementById('newroom-button').addEventListener('click', function(){
     window.location.replace('/room')
 })
 
-navigator.serviceWorker.register('/notifier.js').then(registration=>{
-    const options = {
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array('BKZ9fgsXkZTpcPn1yGwhZPZpwJQv64s5mbVwUcL647git4wlYClkzlN_D7aba8anMwfS4FKwZ1hPGK_i30VUPSQ')
-      }
-    registration.pushManager.subscribe(options).then(subscription=>{
-        fetch('/newsubscription',{
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body:JSON.stringify(subscription)
-        }).then(res=>{
-            return res.text()
-        }).then(res=>{
-            console.log(res)
+if(issubscribed){
+    notificationoptin.innerHTML = "You are subscribed to notifications"
+}
+
+function optin(){
+    if(Notification.permission!="granted"){
+        Notification.requestPermission().then(res=>{
+            if(res=="granted"){
+                installserviceworker()
+            }
         })
-    })
-}).catch(err=> console.log(err))
+    }
+    else{
+        installserviceworker()
+    }
+}
+
+function installserviceworker(){
+    navigator.serviceWorker.register('/notifier.js').then(registration=>{
+        const options = {
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array('BKZ9fgsXkZTpcPn1yGwhZPZpwJQv64s5mbVwUcL647git4wlYClkzlN_D7aba8anMwfS4FKwZ1hPGK_i30VUPSQ')
+          }
+        registration.pushManager.subscribe(options).then(subscription=>{
+            fetch('/newsubscription',{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body:JSON.stringify(subscription)
+            }).then(res=>{
+                return res.text()
+            }).then(res=>{
+                console.log(res)
+                notificationoptin.innerHTML = "You are subscribed to notifications"
+            })
+        })
+    }).catch(err=> console.log(err))
+}
 
 
 
