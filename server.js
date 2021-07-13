@@ -176,7 +176,7 @@ io.on('connection', function(socket){
                 rooms[clientdata.room].nos--
             }
             console.log(rooms)
-            //delete rooms[clientdata.room].users[clientdata.username] //uncomment after locking multiple logins
+            delete rooms[clientdata.room].users[clientdata.username] //uncomment after locking multiple logins
             if(users[clientdata.username].status=="incall"){
                 rooms[clientdata.room].nosincall--
                 delete rooms[clientdata.room].usersincall[clientdata.username]
@@ -201,7 +201,7 @@ io.on('connection', function(socket){
             else if(users[clientdata.invitee]){
                 if('subscription' in users[clientdata.invitee]){
                     invite(clientdata.name, clientdata.room, clientdata.invitee)
-                    socket.emit
+                    socket.emit('inviteresponse-server', 'has been invited')
                 }
                 else{
                     socket.emit('inviteresponse-server', "is not subscribed to invitations")
