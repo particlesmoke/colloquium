@@ -8,9 +8,7 @@ document.getElementById('register-button').addEventListener('click',function(){
         console.log(response)
             document.getElementById('status').innerHTML = response.status
             if(response.isregistered = 'true'){
-                setTimeout(function(){
-                    window.location.href = '/login'
-                }, 2000)
+                window.location.href = '/login'
             }
     })
 })

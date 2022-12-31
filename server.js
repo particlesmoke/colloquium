@@ -1,11 +1,11 @@
 const express = require('express')
 const app = express()
-//const fs = require('fs');
-// const options = {
-//     key: fs.readFileSync(__dirname+'\\localhost-key.pem'),
-//     cert: fs.readFileSync(__dirname+'\\localhost.pem')
-// };
-const server = require('http').createServer(app)
+const fs = require('fs');
+const options = {
+    key: fs.readFileSync(__dirname+'\\localhost-key.pem'),
+    cert: fs.readFileSync(__dirname+'\\localhost.pem')
+};
+const server = require('https').createServer(options, app)
 const { Server } = require('socket.io')
 const io = new Server(server)
 const { v4: uuidv4 } = require('uuid')
@@ -15,7 +15,8 @@ const bcrypt = require('bcrypt')
 const session = require('express-session')
 const bodyparser = require('body-parser')
 const webpush = require('web-push');
-const { getMaxListeners } = require('process')
+const { MongoClient, Collection } = require("mongodb")
+// const { getMaxListeners } = require('process')
 const webpushkeys = {
     public: 'BKZ9fgsXkZTpcPn1yGwhZPZpwJQv64s5mbVwUcL647git4wlYClkzlN_D7aba8anMwfS4FKwZ1hPGK_i30VUPSQ',
     private: 'QH7SGz2fuvm5YCdJSVRQr0nipXh46NS6kXkFfC4jhEA'
@@ -30,7 +31,7 @@ var users = {
   q: {
     name: 'Sashaa',
     hashedpassword: '$2b$10$LfQBWAx9NV1.QmLdm59o/OvPNqC9CX4ez9IxpqfaePkcUU0IOr2Zm',
-    status: 'offline'
+    status: 'offline',
   }
 }
 var rooms = {}
@@ -38,6 +39,16 @@ var rooms = {}
 webpush.setVapidDetails(
     'mailto:jayeshsingh2001@gmail.com', webpushkeys.public, webpushkeys.private
 )
+
+const dbClient = new MongoClient('mongodb://mongo:wk9aC49jTriHUta01263@containers-us-west-112.railway.app:5643')
+let dbUserCollection
+
+async function connectDb(){
+	await dbClient.connect();
+	dbUserCollection = dbClient.db('collo').collection('users')
+	return 'DB connected'
+}
+connectDb().then(console.log).catch(console.log)
 
 app.use(session({
     secret : "olaaaaa",
@@ -70,8 +81,11 @@ app.get('/room', (req,res)=>{
     res.redirect(`/room/${uuidv4()}`)
 })
 app.get('/home', (req,res)=>{
+
     if(req.session.isloggedin == true){
-        res.render('home',{name: users[req.session.username].name, username: req.session.username, issubscribed: "subscription" in users[req.session.username] })
+        users[req.session.username].status = 'online'
+		console.log(users[req.session.username] )
+        res.render('home',{name: users[req.session.username].name, username: req.session.username, issubscribed: "subscription" in users[req.session.username]})
     }
     else{
         res.redirect('/login')
@@ -79,7 +93,8 @@ app.get('/home', (req,res)=>{
 })
 app.post('/newsubscription', (req,res)=>{
     users[req.session.username].subscription = req.body
-    console.log(users)
+	dbUserCollection.updateOne({_id:req.session.username},{$set:{subscription: req.body}})
+    console.log(req.session.username + "subscribed to invites")
     res.send("subscription recieved")
 })
 app.post('/register', async (req,res)=>{
@@ -87,14 +102,22 @@ app.post('/register', async (req,res)=>{
     if(req.body.name == '' || req.body.username == '' || req.body.password == ''){
         res.json({isregistered : "false", status : "All fields required"})
     }
-    else if((req.body.username in users)){
+    else if((req.body.username in users)){ //do mongo
         res.json({isregistered : "false", status : "Username already exists"})
     }
     else{
-        const hashedpassword = await bcrypt.hash(req.body.password, 10)
-        users[req.body.username] = {name:req.body.name, hashedpassword:hashedpassword, status:'offline'}
-        res.json({isregistered : "true", status : "Registered successfully, being redirected to login"})
-        console.log(users)
+        try{
+            const hashedpassword = await bcrypt.hash(req.body.password, 10)
+            users[req.body.username] = {name:req.body.name, hashedpassword:hashedpassword, status:'offline'}
+			dbUserCollection.insertOne({_id:req.body.username, name:req.body.name, hashedpassword:hashedpassword})
+            console.log(req.body.username+" registered")
+            res.json({isregistered : "true", status : "Registered successfully, being redirected to login"})
+        }
+        catch(err){
+            console.log(err)
+            res.json({isregistered : "false", status : err})
+        }
+        
     }   
 })
 app.post('/login', async (req, res)=>{
@@ -103,22 +126,30 @@ app.post('/login', async (req, res)=>{
         res.json({isloggedin : "false", status : "Both fields required"})
     }
     else{
-        if(!(req.body.username in users)){
+		const userCursor = await dbUserCollection.findOne({_id:req.body.username})
+		// console.log(userCursor)
+        // if(!(req.body.username in users)){
+        //     res.json({isloggedin : "false", status : "Username does not exist"})
+        // }
+        if(userCursor==null){
             res.json({isloggedin : "false", status : "Username does not exist"})
         }
         else{
-            if(users[req.body.username].status=="inroom" || users[req.body.username].status=="incall"){ //interim fix, make user go offline if user leaves home page, rn big security issue
+            if(users[req.body.username]?.status=="inroom" || users[req.body.username]?.status=="incall"){ //interim fix, make user go offline if user leaves home page, rn big security issue
                 res.json({isloggedin : "false", status : "Already logged in elsewhere"})
             }
             else{
-                const result = await bcrypt.compare(req.body.password, users[req.body.username].hashedpassword)
+
+                // const result = await bcrypt.compare(req.body.password, users[req.body.username].hashedpassword)
+                const result = await bcrypt.compare(req.body.password, userCursor.hashedpassword)
                 if(!result){
                     res.json({isloggedin : "false", status : "Wrong password"})
                 }
                 else{
                     req.session.isloggedin = true
                     req.session.username = req.body.username
-                    users[req.body.username].status = "online"
+                    users[req.body.username]={status : "online", name: userCursor.name}
+					if(userCursor.subscription) users[req.body.username].subscription = userCursor.subscription
                     res.json({isloggedin: "true", status: "Logged in successfully"})
                 }
             }
@@ -181,7 +212,6 @@ io.on('connection', function(socket){
             if(rooms[clientdata.room]!=undefined){ //check
                 rooms[clientdata.room].nos--
             }
-            console.log(rooms)
             delete rooms[clientdata.room].users[clientdata.username] //uncomment after locking multiple logins
             if(users[clientdata.username].status=="incall"){
                 rooms[clientdata.room].nosincall--
@@ -199,22 +229,26 @@ io.on('connection', function(socket){
         socket.on('text-c2s', function(text){
             socket.broadcast.to(clientdata.room).emit('text-s2c', text)
         })
-        socket.on('inviterequest', function(clientdata){
+        socket.on('inviterequest', async function(clientdata){
             if(clientdata.invitee in rooms[clientdata.room].users){
                 socket.emit('inviteresponse-server', "is already here")
             }
-            else if(users[clientdata.invitee]){
-                if('subscription' in users[clientdata.invitee]){
-                    invite(clientdata.name, clientdata.room, clientdata.invitee)
-                    socket.emit('inviteresponse-server', 'has been invited')
-                }
-                else{
-                    socket.emit('inviteresponse-server', "is not subscribed to invitations")
-                }
-            }
-            else{
-                socket.emit('inviteresponse-server', "does not exist")
-            }
+			else{
+				let userCursor = await dbUserCollection.findOne({_id:clientdata.invitee})
+				if(userCursor!=null){
+					if('subscription' in userCursor){
+						users[clientdata.invitee] = {subscription:userCursor.subscription}
+						invite(clientdata.name, clientdata.room, clientdata.invitee)
+						socket.emit('inviteresponse-server', 'has been invited')
+					}
+					else{
+						socket.emit('inviteresponse-server', "is not subscribed to invitations")
+					}
+				}
+				else{
+					socket.emit('inviteresponse-server', "does not exist")
+				}
+			}
         })
     })
 })
@@ -230,4 +264,6 @@ function invite(inviter, room, invitee){
     })
 }
 
-server.listen(process.env.PORT || 80)
+// server.listen(80)
+
+server.listen(443)

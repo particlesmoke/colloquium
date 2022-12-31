@@ -105,8 +105,9 @@ navigator.mediaDevices.getUserMedia({
         }
     }
     
-}).catch(function(){
-    alert("Please provide access to the camera and microphone, you may turn off your audio/video before entering the call")
+}).catch(function(err){
+    // alert("Please provide access to the camera and microphone, you may turn off your audio/video before entering the call")
+    alert("This error occurred" + err)
     location.reload()
 })
 
