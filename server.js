@@ -1,11 +1,12 @@
 const express = require('express')
 const app = express()
-const fs = require('fs');
-const options = {
-    key: fs.readFileSync(__dirname+'\\localhost-key.pem'),
-    cert: fs.readFileSync(__dirname+'\\localhost.pem')
-};
-const server = require('https').createServer(options, app)
+// const fs = require('fs');
+// const options = {
+//     key: fs.readFileSync(__dirname+'\\localhost-key.pem'),
+//     cert: fs.readFileSync(__dirname+'\\localhost.pem')
+// };
+// const server = require('https').createServer(options, app)
+const server = require('http').createServer(app)
 const { Server } = require('socket.io')
 const io = new Server(server)
 const { v4: uuidv4 } = require('uuid')
@@ -265,5 +266,6 @@ function invite(inviter, room, invitee){
 }
 
 // server.listen(80)
+server.listen(process.env.PORT || 80)
 
-server.listen(443)
+// server.listen(443)
