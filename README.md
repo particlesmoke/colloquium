@@ -2,7 +2,7 @@
 # Colloquium
 
 Colloquium is a webrtc connection broker, with added features, written in Node.
-It's hosted [at heroku](https://cryptic-dawn-98457.herokuapp.com) right now
+It's hosted at [colloquium.jayesh.one](https://colloquium.jayesh.one) right now
 
 ## How to install on your local
 
