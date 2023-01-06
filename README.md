@@ -70,7 +70,7 @@ Users in the same room can chat with each other or join the call in the room to 
 
 
 ## Server
-The server is written in node. The video streams do not go through the server, Colloquium relies on peer to peer webrtc connections. Server stores data in runtime memory, there is not database as of yet. The following data is available with the server
+The server is written in node. The video streams do not go through the server, Colloquium relies on peer to peer webrtc connections. Server stores user data in a mongoDB instance. The following data is available with the server
 * Generated rooms, their occupants and who are in the call in that room
 * Users, their names, their status (online, incall, inroom, offline), the room they are in (if they are in) their hashed passwords and their push subscription 
 
