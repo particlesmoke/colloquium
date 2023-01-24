@@ -17,7 +17,6 @@ const session = require('express-session')
 const bodyparser = require('body-parser')
 const webpush = require('web-push');
 const { MongoClient, Collection } = require("mongodb")
-// const { getMaxListeners } = require('process')
 const webpushkeys = {
     public: 'BKZ9fgsXkZTpcPn1yGwhZPZpwJQv64s5mbVwUcL647git4wlYClkzlN_D7aba8anMwfS4FKwZ1hPGK_i30VUPSQ',
     private: 'QH7SGz2fuvm5YCdJSVRQr0nipXh46NS6kXkFfC4jhEA'
