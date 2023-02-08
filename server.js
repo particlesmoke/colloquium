@@ -40,7 +40,7 @@ webpush.setVapidDetails(
     'mailto:jayeshsingh2001@gmail.com', webpushkeys.public, webpushkeys.private
 )
 
-const dbClient = new MongoClient('mongodb://mongo:wk9aC49jTriHUta01263@containers-us-west-112.railway.app:5643')
+const dbClient = new MongoClient('mongodb://mongo:6KN5yM8bYCjFhLompvIb@containers-us-west-172.railway.app:6146')
 let dbUserCollection
 
 async function connectDb(){
